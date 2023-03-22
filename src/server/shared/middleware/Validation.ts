@@ -7,6 +7,7 @@ type Tproperty = 'body' | 'header' | 'params' | 'query';
 type TGetSchema = <T extends Maybe<AnyObject>>(schema: ObjectSchema<T>) => ObjectSchema<T>;
 
 type TAllSchemas = Record<Tproperty, ObjectSchema<any>>;
+
 type TGetAllSchemas = (getSchema: TGetSchema) => Partial<TAllSchemas>;
 
 type TValidation = (getAllSchemas: TGetAllSchemas) => RequestHandler;
