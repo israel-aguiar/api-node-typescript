@@ -1,6 +1,7 @@
 import { Request, RequestHandler, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as yup from 'yup';
+import { validation } from '../../shared/middleware';
 
 
 interface ICidade {
@@ -8,59 +9,21 @@ interface ICidade {
   estado: string
 }
 
-const bodyValidation: yup.ObjectSchema<ICidade> = yup.object().shape({
-
-  nome: yup.string().required().min(3),
-  estado: yup.string().required().min(3),
-
-});
-
-export const createBodyValidator: RequestHandler = async (req, res, next) => {
-  try {
-    await bodyValidation.validate(req.body, { abortEarly: false });
-    return next();
-  } catch (error) {
-    const yupError = error as yup.ValidationError;
-    const errors: Record<string, string> = {};
-
-    yupError.inner.forEach(error => {
-      //if (error.path) return;
-      if (error.path === undefined) return;//mesma coisa
-
-      errors[error.path] = error.message;
-    });
-
-    return res.status(StatusCodes.BAD_REQUEST).json({ errors });
-  }
-};
-
 interface IFilter {
-  filtro?: string
+  filtro?: string,
 }
 
-const queryValidation: yup.ObjectSchema<IFilter> = yup.object().shape({
-  filtro: yup.string().optional().min(3),
-});
 
-export const createQueryValidator: RequestHandler = async (req, res, next) => {
-  try {
-    await queryValidation.validate(req.query, { abortEarly: false });
-    return next();
-  } catch (error) {
-    const yupError = error as yup.ValidationError;
-    const errors: Record<string, string> = {};
-
-    yupError.inner.forEach(error => {
-      //if (error.path) return;
-      if (error.path === undefined) return;//mesma coisa
-
-      errors[error.path] = error.message;
-    });
-
-    return res.status(StatusCodes.BAD_REQUEST).json({ errors });
-  }
-};
-
+export const createValidation = validation((getSchema) => ({
+  body:  getSchema<ICidade>(yup.object().shape({
+    nome: yup.string().required().min(3),
+    estado: yup.string().required().min(3),
+  
+  })),
+  query:  getSchema<IFilter>(yup.object().shape({
+    filtro: yup.string().optional().min(3),
+  }))
+}));
 
 export const create = async (req: Request<{}, {}, ICidade>, res: Response) => {
 
